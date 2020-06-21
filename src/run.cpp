@@ -1,5 +1,7 @@
 #include "mail_class.h"
 #include "search_mail_functions.h"
+#include "query.h"
+#include "tools.h"
 #include <cstdio>
 #include <vector>
 #include <string>
@@ -7,6 +9,7 @@
 
 int main(void)
 {
+    char querystr[100000];
     char query[1024];
     char file_path[128];
     std::set<Roger::MailForSearch> mails;
@@ -15,17 +18,22 @@ int main(void)
     while (scanf("%s", query) != EOF) {
         if (strcmp(query, "add") == 0) {
             scanf("%s", file_path);
+            LOGCLR("%d add %s",cnt,file_path);
             Roger::add(file_path, mails, mail_lens);
         }
         else if (strcmp(query, "remove") == 0) {
             int id; scanf("%d", &id);
+            LOGCLR("%d remove %d",cnt,id);
             Roger::remove(id, mails, mail_lens);
         }
         else if (strcmp(query, "longest") == 0) {
+            LOGCLR("%d longest",cnt);
             Roger::longest(mail_lens);
         }
         else if (strcmp(query, "query") == 0) {
-            printf("-\n");
+            scanf(" %[^\n]\n", querystr);
+            LOGCLR("%d query %s",cnt,querystr);
+            query_support::query(querystr, mails);
         }
         cnt++;
         //if (cnt % 1000 == 0) printf("%lu\n", mail_lens.size());
