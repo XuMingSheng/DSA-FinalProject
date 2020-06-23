@@ -10,8 +10,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "query.h"
-#include "search_mail_functions.h"
 #include "tools.h"
 
 #define MAX_READ_SIZE 1000000
