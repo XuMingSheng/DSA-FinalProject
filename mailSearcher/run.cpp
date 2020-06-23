@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 #include "mail_class.h"
-#include "query.h"
-#include "search_mail_functions.h"
 #include "tools.h"
 
 int main(void)
