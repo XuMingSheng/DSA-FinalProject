@@ -190,6 +190,12 @@ int MailSearcher::remove(int id)
                 break;
             }
         }
+        for (auto it = mail.contents.begin(); it != mail.contents.end(); it++) {
+            std::string word;
+            if (it->size() > 1) word = it->substr(0, 1);
+            else word = *it;
+            word_to_id[word].erase(mail.id);
+        }
     }
 
     query_cache.clear();
