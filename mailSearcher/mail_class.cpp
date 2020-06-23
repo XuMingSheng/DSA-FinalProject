@@ -104,10 +104,15 @@ int MailSearcher::add(const char* file_path)
         // to is case-insensitive
         *c = std::tolower(*c);
 
+    /* Construct Mail */
     MailForSearch mail =
         MailForSearch(std::string(from), std::string(to), date, id);
+    IDset.insert(id);
     for (int i = 0; i < subject.size(); i++) {
-        mail.insertContent(std::string(subject[i]));
+        std::string word = std::string(subject[i]);
+        mail.insertContent(word);
+        if (word.size() > 1) word_to_id[word.substr(0, 1)].insert(mail.id);
+        else word_to_id[word].insert(mail.id);
     }
 
     token = strtok(NULL, "\n ");
@@ -119,7 +124,10 @@ int MailSearcher::add(const char* file_path)
     len = 0;
     while (content != NULL) {
         len += strlen(content);
-        mail.insertContent(content);
+        std::string word = std::string(content);
+        mail.insertContent(word);
+        if (word.size() > 1) word_to_id[word.substr(0, 1)].insert(mail.id);
+        else word_to_id[word].insert(mail.id);
         content = strtok(NULL, "\n ");
     }
     mail.setLength(len);

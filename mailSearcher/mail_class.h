@@ -99,6 +99,10 @@ public:
     std::unordered_map<std::string, std::vector<int>> mail_by_from;
     std::unordered_map<std::string, std::vector<int>> mail_by_to;
     // std::multimap<long long, int> mail_by_date;
+    
+    /* keyword to id mapping */
+    std::unordered_map<std::string, std::set<int> > word_to_id;
+    std::set<int> IDset; 
 
     // (mail id, keyword) -> bool
     std::map<std::pair<int, std::string>, bool> query_cache;
