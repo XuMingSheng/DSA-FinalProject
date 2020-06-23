@@ -102,7 +102,7 @@ public:
     
     /* keyword to id mapping */
     std::unordered_map<std::string, std::set<int> > word_to_id;
-    std::set<int> IDset; 
+    std::set<int> IDset, search_base; 
 
     // (mail id, keyword) -> bool
     std::map<std::pair<int, std::string>, bool> query_cache;
@@ -118,6 +118,7 @@ public:
 private:
     inline bool _test_expr(const MailForSearch& mail,
                            const Expression& postfix_expr);
+    void initSearchBase(const Expression& postfix_expr); 
 };
 
 #endif

@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <stack>
 #include "tools.h"
 
 #define MAX_READ_SIZE 1000000
@@ -111,7 +112,7 @@ int MailSearcher::add(const char* file_path)
     for (int i = 0; i < subject.size(); i++) {
         std::string word = std::string(subject[i]);
         mail.insertContent(word);
-        if (word.size() > 1) word_to_id[word.substr(0, 1)].insert(mail.id);
+        if (word.size() > 1) word_to_id[word.substr(0, 2)].insert(mail.id);
         else word_to_id[word].insert(mail.id);
     }
 
@@ -126,7 +127,7 @@ int MailSearcher::add(const char* file_path)
         len += strlen(content);
         std::string word = std::string(content);
         mail.insertContent(word);
-        if (word.size() > 1) word_to_id[word.substr(0, 1)].insert(mail.id);
+        if (word.size() > 1) word_to_id[word.substr(0, 2)].insert(mail.id);
         else word_to_id[word].insert(mail.id);
         content = strtok(NULL, "\n ");
     }
@@ -192,7 +193,7 @@ int MailSearcher::remove(int id)
         }
         for (auto it = mail.contents.begin(); it != mail.contents.end(); it++) {
             std::string word;
-            if (it->size() > 1) word = it->substr(0, 1);
+            if (it->size() > 1) word = it->substr(0, 2);
             else word = *it;
             word_to_id[word].erase(mail.id);
         }
@@ -461,6 +462,43 @@ inline bool MailSearcher::_test_expr(const MailForSearch& mail,
     return st.back();
 }
 
+void MailSearcher::initSearchBase(const Expression& postfix_expr) 
+{
+   std::stack< std::set<int> > st;
+
+   for (auto& op : postfix_expr) {
+       if (!isalnum(op[0])) { // operator
+           std::set<int> result;
+           if (op == "!") {
+                assert(st.size() >= 1);
+                std::set<int> cur = st.top(); st.pop();  
+                set_difference(IDset.begin(), IDset.end(), cur.begin(), cur.end(), 
+                        std::insert_iterator< std::set<int> >(result, result.begin()));
+            } else {
+                assert(op == "|" || op == "&");
+                assert(st.size() >= 2);
+                std::set<int> a = st.top(); st.pop();
+                std::set<int> b = st.top(); st.pop();
+                if (op == "|") 
+                    set_union(a.begin(), a.end(), b.begin(), b.end(), 
+                        std::insert_iterator< std::set<int> >(result, result.begin()));
+                else  
+                    set_intersection(a.begin(), a.end(), b.begin(), b.end(), 
+                        std::insert_iterator< std::set<int> >(result, result.begin()));
+            }
+            st.push(result);
+
+       } else {  // keyword
+           std::string word;
+           if (op.size() > 1) word = op.substr(0, 2);
+           else word = op;
+           st.push(word_to_id[word]); 
+       }
+   }
+   assert(st.size() == 1);
+   search_base = st.top();
+}
+
 /* Return number of index written to dest,
  * dest should be a prepared vector/array from caller */
 std::vector<int> MailSearcher::query(const char querystr[])
@@ -498,7 +536,11 @@ std::vector<int> MailSearcher::query(const char querystr[])
                 subset.push_back(id);
             }
         }
-        for (int id : subset) {
+
+        initSearchBase(exprlist);
+        std::vector<int> buffer;
+        set_intersection (subset.begin(), subset.end(), search_base.begin(), search_base.end(), std::back_inserter(buffer)); 
+        for (int id : buffer) {
             auto it = mails.find(id);
             assert(it != mails.end());
             auto& mail = it->second;
@@ -533,11 +575,14 @@ std::vector<int> MailSearcher::query(const char querystr[])
         //     auto mailit = mails.find(i);
         //     assert(mailit != mails.end());
         //     auto& mail = mailit->second;
-        for (const auto& [id, mail] : mails) {
+        initSearchBase(exprlist);
+        for (int id : search_base) {
             // for (auto& x : mail.contents) {
             //     LOG("  content %s",x.c_str());
             // }
-
+            auto it = mails.find(id);
+            assert(it != mails.end());
+            auto& mail = it->second;
             if ((!queryopt.has_date_from || mail.date >= queryopt.date_from) &&
                 (!queryopt.has_date_to || mail.date <= queryopt.date_to)) {
             } else {
