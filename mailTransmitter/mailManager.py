@@ -221,13 +221,11 @@ if __name__ == "__main__":
     #default_dir = "./mailData"# This should be replaced with different dir for Qt to search
     if not os.path.isdir(default_dir):
         os.mkdir(default_dir)
+    if not os.path.isfile(os.path.join("sdefault_dir, "sended_cnt))
         f = open(os.path.join(default_dir, "sended_cnt"), "w")
         f.write("0")
         f.close()
-    f = open(os.path.join(default_dir, "sended_cnt"), "r")
-    startID = int(f.read()) + 1024
-    f.close()
-  
+    startID = 65536 
      
     account = read_fifo("input gmail account: \n")[:-1]
     password = read_fifo("Input gmail password: \n")[:-1]
@@ -250,4 +248,4 @@ if __name__ == "__main__":
         else:
             break
             
-    write_fifo("Successfully Ending\n") 
+    write_fifo("Successfully Ending\n")
